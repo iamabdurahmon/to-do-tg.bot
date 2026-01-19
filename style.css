@@ -1,0 +1,256 @@
+@import url(https://fonts.googleapis.com/css2?family=Inder&display=swap);
+
+:root {
+  --primary-color: #4f4f4f;
+  --hover-color: #747474;
+
+  --font: "Inder", sans-serif;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: var(--font);
+}
+
+html {
+  scroll-behavior: smooth;
+  font-size: 10px;
+}
+
+.wrapper {
+  max-width: 680px;
+  width: 100%;
+  height: auto;
+  margin: 0 auto;
+}
+
+.wrapper section {
+  width: 100%;
+  height: auto;
+  margin-top: 8rem;
+  padding: 2rem 4rem;
+}
+
+.wrapper section h1:first-child {
+  font-size: 3rem;
+  font-weight: 900;
+  color: var(--primary-color);
+}
+
+section .task-add {
+  display: flex;
+  align-items: end;
+  justify-content: center;
+  gap: 1.5rem;
+}
+
+section .task-add input {
+  width: 100%;
+  border: none;
+  background-color: transparent;
+  border-bottom: 3px solid var(--primary-color);
+  margin-top: 2rem;
+  padding-bottom: 0.8rem;
+  padding-left: 0.4rem;
+  outline: none;
+  color: var(--primary-color);
+  font-size: 1.6rem;
+}
+
+section .task-add input::placeholder {
+  font-size: 1.6rem;
+  color: var(--hover-color);
+}
+
+section .task-add .add-btn {
+  font-size: 1.8rem;
+  color: #fff;
+  padding: 0.5rem 0.8rem;
+  background-color: var(--primary-color);
+  border-radius: 0.8rem;
+  transition:
+    background-color 0.3s,
+    scale 0.4s;
+}
+
+section .task-add .add-btn:hover {
+  background-color: var(--hover-color);
+}
+
+section .task-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 2.5rem;
+  padding: 1.5rem;
+  border: 2px solid var(--hover-color);
+  border-radius: 1.2rem;
+}
+
+/* 1. Asosiy konteyner o'z joyida qoladi */
+section .task-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* Elementlarni ikki chetga suradi */
+  margin-top: 2.5rem;
+  padding: 1.5rem;
+  border: 2px solid var(--hover-color);
+  border-radius: 1.2rem;
+  gap: 1rem; /* Elementlar orasida masofa qoldiradi */
+}
+
+/* 2. Checkbox va Matn turgan qism */
+section .task-card .card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 1; /* Faqat shu qism cho'ziladi */
+  min-width: 0; /* Matn qisqarishi uchun juda muhim */
+}
+
+/* 3. Matnning o'zi */
+section .task-card .task-text {
+  font-size: 1.6rem;
+  font-weight: 400;
+  color: var(--primary-color);
+  transition: opacity 0.3s;
+
+  /* Ellipsis (uchta nuqta) effekti */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1; /* Matn o'zi ham mavjud joyni egallaydi */
+}
+
+/* 4. O'chirish tugmasi qisqarib ketmasligi uchun */
+section .task-edit {
+  flex-shrink: 0; /* Tugma siqilib qolmasligini ta'minlaydi */
+  display: flex;
+  align-items: center;
+}
+
+section .task-card .card,
+.task-card .task-edit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+section .task-card .card input[type="checkbox"] {
+  accent-color: var(--hover-color);
+  width: 1.8rem;
+  height: 1.8rem;
+}
+
+section .task-card .card input:checked + .task-text {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+section .task-edit span i {
+  font-size: 2rem;
+  color: var(--primary-color);
+  transition: color 0.3s;
+}
+
+section .task-edit span i:actve {
+  color: var(--hover-color);
+}
+
+.data {
+  width: 100%;
+  height: auto;
+  margin-top: 2.5rem;
+}
+
+.data h2 {
+  font-size: 1.6rem;
+  font-weight: 500;
+  font-style: italic;
+  color: var(--primary-color);
+}
+
+.data p {
+  width: 90%;
+  font-size: 1.4rem;
+  font-weight: 400;
+  font-style: italic;
+  color: var(--hover-color);
+  margin-top: 1.5rem;
+  flex-wrap: wrap;
+}
+
+/* no task case */
+
+.no-task {
+  width: 100%;
+  height: auto;
+  text-align: center;
+  margin-top: 3rem;
+
+  display: none;
+}
+
+.no-task img {
+  width: 20rem;
+}
+
+.no-task h1 {
+  font-size: 2rem;
+  font-weight: 500;
+  color: var(--hover-color);
+  margin-top: 2rem;
+  padding-bottom: 3rem;
+}
+
+/* animation */
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideOut {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+}
+
+.task-card {
+  animation: slideIn 0.4s ease forwards;
+  transition: all 0.3s ease;
+}
+
+.task-card.fall {
+  animation: slideOut 0.3s ease forwards;
+}
+
+.task-card:hover {
+  border-color: var(--primary-color);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transform: translateY(-2px);
+}
+
+.edit-btn,
+.delete-btn {
+  transition: transform 0.3s ease;
+}
+
+.edit-btn:hover,
+.delete-btn:hover {
+  transform: scale(0.9);
+}
