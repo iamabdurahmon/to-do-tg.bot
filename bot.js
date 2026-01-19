@@ -4,10 +4,10 @@ const { Telegraf, Markup } = require("telegraf");
 const bot = new Telegraf("BOT_TOKEN");
 
 // Saytingiz internetga yuklangan bo'lishi shart (Vercel yoki GitHub Pages)
-const WEB_LINK = "https://sizning-saytingiz-manzili.vercel.app";
+const WEB_LINK = "https://to-do-tg-bot.vercel.app";
 
 bot.start((ctx) => {
-  ctx.reply("Xush kelibsiz! Tasklaringizni boshqarish uchun pastdagi tugmani bosing.", Markup.keyboard([[Markup.button.webApp("To-Do List", WEB_LINK)]]).resize());
+  ctx.reply("Welcome to To Do List app! Click the button below to start this app.", Markup.keyboard([[Markup.button.webApp("To-Do List", WEB_LINK)]]).resize());
 });
 
 bot.launch();
