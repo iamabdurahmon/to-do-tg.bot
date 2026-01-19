@@ -1,4 +1,3 @@
-// Firebase Konfiguratsiyasi
 const firebaseConfig = {
   apiKey: "AIzaSyAQUZAJl1KIYE1hfXDHnoxGsQAhxi5STTU",
   authDomain: "to-do-list-bot-c91cb.firebaseapp.com",
@@ -9,16 +8,13 @@ const firebaseConfig = {
   measurementId: "G-1VVX61WBJY",
 };
 
-// Firebase-ni ishga tushirish
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-// Telegram WebApp API
 const tg = window.Telegram.WebApp;
-tg.expand(); // Ilovani to'liq ekranga yoyish
-const userId = tg.initDataUnsafe?.user?.id || "local_user"; // Foydalanuvchi ID-sini olish
+tg.expand();
+const userId = tg.initDataUnsafe?.user?.id || "local_user";
 
-// Elementlar
 const taskInput = document.querySelector(".task-add input");
 const addBtn = document.querySelector(".add-btn");
 const noTaskImg = document.querySelector(".no-task");
@@ -28,12 +24,21 @@ let todos = [];
 let editId;
 let isEditTask = false;
 
-// 1. Bazadan ma'lumotlarni Real-time (jonli) yuklab olish
-function loadTasksFromFirebase() {
+// 1. Ma'lumotlarni Firebase'dan olinganda "no-task"ni boshqarish
+function loadTasks() {
   db.ref("todos/" + userId).on("value", (snapshot) => {
     const data = snapshot.val();
     todos = data || [];
-    showTasks();
+
+    // Agar ma'lumot bo'sh bo'lsa, rasmni ko'rsatish
+    if (todos.length === 0) {
+      noTaskImg.style.display = "block";
+      document.querySelectorAll(".task-card").forEach((card) => card.remove());
+    } else {
+      noTaskImg.style.display = "none";
+      showTasks();
+    }
+    updateCount();
   });
 }
 
@@ -41,57 +46,69 @@ function loadTasksFromFirebase() {
 function showTasks() {
   document.querySelectorAll(".task-card").forEach((card) => card.remove());
 
-  if (todos.length > 0) {
-    noTaskImg.style.display = "none";
-    todos.forEach((todo, id) => {
-      let isCompleted = todo.status === "completed" ? "checked" : "";
-      let textStyle = todo.status === "completed" ? 'style="text-decoration: line-through; opacity: 0.6;"' : "";
-
-      let taskHtml = `
-        <div class="task-card" data-id="${id}">
-          <div class="card">
-            <input type="checkbox" ${isCompleted} onclick="updateStatus(this, ${id})">
-            <h1 class="task-text" ${textStyle}>${todo.name}</h1>
-          </div>
-          <div class="task-edit">
-            <span title="Edit" class="edit-btn" onclick="editTask(${id}, '${todo.name.replace(/'/g, "\\'")}')">
-                <i class="ri-pencil-ai-2-line"></i>            
-            </span>
-            <span title="Delete" class="delete-btn" onclick="deleteTask(${id})">
-                <i class="ri-close-circle-line"></i>
-            </span>
-          </div>
-        </div>`;
-      noTaskImg.insertAdjacentHTML("beforebegin", taskHtml);
-    });
-  } else {
-    noTaskImg.style.display = "block";
-  }
-  updateCount();
+  todos.forEach((todo, id) => {
+    let isChecked = todo.status === "completed" ? "checked" : "";
+    let taskHtml = `
+      <div class="task-card" id="task-${id}">
+        <div class="card">
+          <input type="checkbox" ${isChecked} onclick="updateStatus(this, ${id})">
+          <h1 class="task-text" style="${todo.status === "completed" ? "text-decoration: line-through; opacity: 0.6;" : ""}">
+              ${todo.name}
+          </h1>
+        </div>
+        <div class="task-edit">
+          <span title="Edit" class="edit-btn" onclick="editTask(${id}, '${todo.name.replace(/'/g, "\\'")}')">
+              <i class="ri-pencil-ai-2-line"></i>            
+          </span>
+          <span title="Delete" class="delete-btn" onclick="deleteTask(${id})">
+              <i class="ri-close-circle-line"></i>
+          </span>
+        </div>
+      </div>`;
+    noTaskImg.insertAdjacentHTML("beforebegin", taskHtml);
+  });
 }
 
-// 3. Ma'lumotlarni Firebase-ga saqlash
-function saveToFirebase() {
-  db.ref("todos/" + userId).set(todos);
-}
-
-// 4. Qo'shish yoki Tahrirlash
+// 3. Qo'shish funksiyasi
 addBtn.addEventListener("click", () => {
   let userTask = taskInput.value.trim();
   if (userTask) {
     if (!isEditTask) {
       todos.push({ name: userTask, status: "pending" });
     } else {
-      isEditTask = false;
       todos[editId].name = userTask;
+      isEditTask = false;
       addBtn.innerHTML = '<i class="ri-add-large-line"></i>';
     }
     taskInput.value = "";
-    saveToFirebase();
+    saveToDB();
   }
 });
 
-// 5. Tahrirlash rejimiga o'tish
+// 4. O'chirish (Animatsiya tugagach no-task tekshiruvi bilan)
+function deleteTask(id) {
+  const element = document.getElementById(`task-${id}`);
+  if (!element) return;
+
+  element.style.animation = "slideOut 0.3s ease forwards";
+
+  element.addEventListener(
+    "animationend",
+    () => {
+      todos.splice(id, 1);
+      if (isEditTask) resetInput();
+      saveToDB();
+      // saveToDB chaqirilganda loadTasks avtomat ishlaydi va no-taskni tekshiradi
+    },
+    { once: true },
+  );
+}
+
+function updateStatus(checkbox, id) {
+  todos[id].status = checkbox.checked ? "completed" : "pending";
+  saveToDB();
+}
+
 function editTask(id, text) {
   editId = id;
   isEditTask = true;
@@ -100,35 +117,13 @@ function editTask(id, text) {
   addBtn.innerHTML = '<i class="ri-check-line"></i>';
 }
 
-// 6. O'chirish (Animatsiya bilan)
-function deleteTask(deleteId) {
-  const targetCard = document.querySelector(`.task-card[data-id="${deleteId}"]`);
-
-  if (targetCard) {
-    targetCard.classList.add("removing");
-    targetCard.addEventListener(
-      "animationend",
-      () => {
-        todos.splice(deleteId, 1);
-        saveToFirebase();
-        resetInput();
-      },
-      { once: true },
-    );
-  } else {
-    todos.splice(deleteId, 1);
-    saveToFirebase();
-  }
-}
-
-// 7. Statusni yangilash
-function updateStatus(selectedTask, id) {
-  todos[id].status = selectedTask.checked ? "completed" : "pending";
-  saveToFirebase();
+function saveToDB() {
+  db.ref("todos/" + userId).set(todos);
 }
 
 function updateCount() {
-  taskCountSpan.textContent = todos.filter((t) => t.status === "pending").length;
+  let count = todos.filter((t) => t.status === "pending").length;
+  if (taskCountSpan) taskCountSpan.textContent = count;
 }
 
 function resetInput() {
@@ -141,5 +136,5 @@ taskInput.addEventListener("keyup", (e) => {
   if (e.key === "Enter") addBtn.click();
 });
 
-// Ishga tushirish
-loadTasksFromFirebase();
+// Birinchi marta kirganda yuklash
+loadTasks();

@@ -190,8 +190,6 @@ section .task-edit span i:actve {
   height: auto;
   text-align: center;
   margin-top: 3rem;
-
-  display: none;
 }
 
 .no-task img {
